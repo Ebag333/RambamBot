@@ -115,6 +115,7 @@ def main() -> None:
             # await paginator.send(ctx.interaction, target=message.channel)  # Use paginator to respond with the embeds
             await paginator.send(ctx, target=message.channel)  # Use paginator to respond with the embeds
 
+    print(os.getenv('TOKEN'))
     bot.run(os.getenv('TOKEN'))  # run the bot with the token
 
 
