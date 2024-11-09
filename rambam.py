@@ -4,10 +4,8 @@ import discord
 from discord.ext import bridge
 from discord.ext.pages import Paginator
 
-import helpers.keywordmessageparser
-import sources.biblegateway
-import sources.filmot
-import sources.sefaria
+import helpers
+import sources
 
 SefariaAPI = sources.sefaria.SefariaAPI()
 YouTubeSearch = sources.filmot.YouTubeTranscriptSearch()
@@ -16,6 +14,7 @@ KeywordReferenceSearch = helpers.keywordmessageparser.KeywordMessageParser()
 
 
 def main() -> None:
+    print("Starting bot")
     intents = discord.Intents.default()
     intents.messages = True
     intents.message_content = True  # Enable access to message content
@@ -116,7 +115,7 @@ def main() -> None:
             # await paginator.send(ctx.interaction, target=message.channel)  # Use paginator to respond with the embeds
             await paginator.send(ctx, target=message.channel)  # Use paginator to respond with the embeds
 
-        bot.run(os.getenv('TOKEN'))  # run the bot with the token
+    bot.run(os.getenv('TOKEN'))  # run the bot with the token
 
 
 if __name__ == '__main__':

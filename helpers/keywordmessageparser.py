@@ -1,11 +1,11 @@
 import re
 
-import rambam.sources.biblegateway
-import rambam.sources.sefaria
+import sources.biblegateway
+import sources.sefaria
 
-SefariaAPI = rambam.sources.sefaria.SefariaAPI()
-BibleGateway = rambam.sources.biblegateway.BibleGateway()
-BibleData = rambam.sources.biblegateway.BibleData
+SefariaAPI = sources.sefaria.SefariaAPI()
+BibleGateway = sources.biblegateway.BibleGateway()
+BibleData = sources.biblegateway.BibleData
 
 
 class KeywordMessageParser:
