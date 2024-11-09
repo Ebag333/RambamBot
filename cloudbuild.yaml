@@ -16,7 +16,7 @@ steps:
     entrypoint: "gcloud"
     timeout: 240s
     args: [
-      "compute", "instances", "update-container", "instance-20241109-183236",
+      "compute", "instances", "update-container", "rambam-discord-bot",
       "--container-image", "us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage",
     ]
     env:
