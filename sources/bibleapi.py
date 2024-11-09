@@ -2,6 +2,7 @@ import requests
 import discord
 from discord.ext import commands
 
+
 class BibleAPI:
     def __init__(self, api_key: str):
         self.api_base_url = "https://api.scripture.api.bible"
@@ -48,6 +49,7 @@ class BibleAPI:
                 )
             embeds.append(embed)
         return embeds
+
 
 # Example usage
 if __name__ == "__main__":

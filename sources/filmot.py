@@ -3,10 +3,10 @@ import urllib.parse
 import re
 import discord
 import discord.ext
-import rambam.helpers.pycord_helpers
+import helpers.pycord_helpers
 
-PycordEmbedCreator = rambam.helpers.pycord_helpers.DiscordEmbedCreator()
-PycordPaginator = rambam.helpers.pycord_helpers.DiscordEmbedPaginator()
+PycordEmbedCreator = helpers.pycord_helpers.DiscordEmbedCreator()
+PycordPaginator = helpers.pycord_helpers.DiscordEmbedPaginator()
 
 
 class YouTubeTranscriptSearch:
