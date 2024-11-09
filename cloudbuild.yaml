@@ -21,8 +21,8 @@ steps:
     env:
       - 'CLOUDSDK_COMPUTE_REGION=us-central1'
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
-      - 'TOKEN=${DISCORD_TOKEN}'
-    secretEnv: ['TOKEN']
+      - 'TOKEN=$$DISCORD_TOKEN'
+    secretEnv: ['DISCORD_TOKEN']
 options:
     logging: CLOUD_LOGGING_ONLY
 availableSecrets:
