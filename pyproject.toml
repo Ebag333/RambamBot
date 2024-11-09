@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "rambam"
+version = "0.0.0"  # Placeholder for version number
+description = ""
+authors = ["Ebag333 <ebagola@gmail,.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+
+py-cord = "^2.6.1"
+markdownify = "^0.13"
+requests = "^2.28"
+biblescrapeway = "^0.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
