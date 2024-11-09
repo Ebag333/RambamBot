@@ -1,32 +1,31 @@
 steps:
   # Docker Build
-  - name: 'gcr.io/cloud-builders/docker'
+  - name: "gcr.io/cloud-builders/docker"
     args: [
-      'build', '-t', 'us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage', '.'
+      "build", "-t", "us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage", "."
     ]
 
   # Docker Push
-  - name: 'gcr.io/cloud-builders/docker'
+  - name: "gcr.io/cloud-builders/docker"
     args: [
-      'push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage'
+      "push", "us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage"
     ]
 
   # Entrypoint, timeout and environment variables
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud'
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
     timeout: 240s
     args: [
-      'compute', 'instances', 'update-container', 'instance-20241109-183236',
-      '--container-image', 'us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage',
-      '--container-env', 'TOKEN=$$DISCORD_TOKEN'
+      "compute", "instances", "update-container", "instance-20241109-183236",
+      "--container-image", "us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage",
     ]
     env:
-      - 'CLOUDSDK_COMPUTE_REGION=us-central1'
-      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
-    secretEnv: ['DISCORD_TOKEN']
+      - "CLOUDSDK_COMPUTE_REGION=us-central1"
+      - "CLOUDSDK_COMPUTE_ZONE=us-central1-a"
+    secretEnv: ["DISCORD_TOKEN"]
 options:
     logging: CLOUD_LOGGING_ONLY
 availableSecrets:
   secretManager:
   - versionName: projects/${PROJECT_ID}/secrets/DISCORD_TOKEN/versions/latest
-    env: 'DISCORD_TOKEN'
+    env: "DISCORD_TOKEN"
