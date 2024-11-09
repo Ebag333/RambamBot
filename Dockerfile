@@ -1,10 +1,7 @@
 from python:3.13
 
-workdir /rambam
+workdir /
 copy ./ .
-
-RUN apt update \
-    apt -y install google-osconfig-agent
 
 ENV POETRY_HOME=/var/tmp/poetry
 run curl -o poetry_install.py -sSL http://install.python-poetry.org && \
