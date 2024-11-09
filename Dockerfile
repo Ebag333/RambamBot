@@ -1,6 +1,6 @@
 from python:3.13
 
-workdir /rambam
+workdir /
 copy ./ .
 
 ENV POETRY_HOME=/var/tmp/poetry
