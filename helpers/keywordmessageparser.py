@@ -36,7 +36,7 @@ class KeywordMessageParser:
         combined_matches.sort(key=lambda x: x[0])
 
         # Remove all really broad references, like whole chapters
-        combined_matches = [item for item in combined_matches if re.search(r'\d+[:.\s]\d+', item[2])]
+        combined_matches = [item for item in combined_matches if re.search(r"\d+[:.\s]\d+", item[2])]
 
         all_embeds = []
 

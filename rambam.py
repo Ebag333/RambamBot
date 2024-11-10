@@ -115,9 +115,9 @@ def main() -> None:
             # await paginator.send(ctx.interaction, target=message.channel)  # Use paginator to respond with the embeds
             await paginator.send(ctx, target=message.channel)  # Use paginator to respond with the embeds
 
-    print(os.getenv('DISCORD_TOKEN'))
-    bot.run(os.getenv('DISCORD_TOKEN'))  # run the bot with the token
+    print(os.getenv("DISCORD_TOKEN"))
+    bot.run(os.getenv("DISCORD_TOKEN"))  # run the bot with the token
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
