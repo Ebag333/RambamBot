@@ -64,13 +64,13 @@ class DiscordEmbedCreator:
         url: Optional[str] = None
         timestamp: Optional[str] = None
         color: Optional[int] = None
-        footer: Optional[DiscordEmbedCreator.EmbedFooter] = None
-        image: Optional[DiscordEmbedCreator.EmbedImage] = None
-        thumbnail: Optional[DiscordEmbedCreator.EmbedThumbnail] = None
-        video: Optional[DiscordEmbedCreator.EmbedVideo] = None
-        author: Optional[DiscordEmbedCreator.EmbedAuthor] = None
-        provider: Optional[DiscordEmbedCreator.EmbedProvider] = None
-        fields: list[DiscordEmbedCreator.EmbedField] = field(default_factory=list)
+        footer: Optional["DiscordEmbedCreator.EmbedFooter"] = None
+        image: Optional["DiscordEmbedCreator.EmbedImage"] = None
+        thumbnail: Optional["DiscordEmbedCreator.EmbedThumbnail"] = None
+        video: Optional["DiscordEmbedCreator.EmbedVideo"] = None
+        author: Optional["DiscordEmbedCreator.EmbedAuthor"] = None
+        provider: Optional["DiscordEmbedCreator.EmbedProvider"] = None
+        fields: list["DiscordEmbedCreator.EmbedField"] = field(default_factory=list)
         type: str = "rich"
 
         MAX_TITLE_LENGTH = 256
@@ -162,7 +162,7 @@ class DiscordEmbedCreator:
             return embed
 
     @staticmethod
-    def create_embed(*, embed_data: DiscordEmbedCreator.EmbedData) -> discord.Embed:
+    def create_embed(*, embed_data: "DiscordEmbedCreator.EmbedData") -> discord.Embed:
         embed = embed_data.to_discord_embed()
         return embed
 
@@ -180,7 +180,7 @@ class DiscordEmbedPaginator:
         description: Optional[str] = None
         url: Optional[str] = None
         color: Optional[int] = None
-        footer: Optional[DiscordEmbedPaginator.EmbedFooter] = None
+        footer: Optional["DiscordEmbedPaginator.EmbedFooter"] = None
 
         def to_discord_embed(self) -> discord.Embed:
             embed = discord.Embed(
