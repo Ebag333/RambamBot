@@ -29,7 +29,7 @@ steps:
       - |
         gcloud compute instances update-container rambam-discord-bot \
         --container-image us-central1-docker.pkg.dev/${PROJECT_ID}/rambam/botimage \
-        --container-env TOKEN=$DISCORD_TOKEN
+        --container-env TOKEN=$$DISCORD_TOKEN
     env:
       - "CLOUDSDK_COMPUTE_REGION=us-central1"
       - "CLOUDSDK_COMPUTE_ZONE=us-central1-a"
