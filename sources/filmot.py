@@ -56,12 +56,12 @@ class YouTubeTranscriptSearch:
         :return: A list of parsed results.
         """
         # Extract JavaScript object from HTML content using regex
-        match = re.search(r'window\.results\s*=\s*(\{.*?\});', html_content, re.DOTALL)
+        match = re.search(r"window\.results\s*=\s*(\{.*?\});", html_content, re.DOTALL)
         if not match:
             return False
 
         results_json_str = match.group(1)
-        results_json_str = re.sub(r'\s+', ' ', results_json_str)  # Remove extra whitespace
+        results_json_str = re.sub(r"\s+", " ", results_json_str)  # Remove extra whitespace
         results = eval(results_json_str)  # Convert to dictionary (use with caution)
 
         parsed_results = []
@@ -92,11 +92,11 @@ class YouTubeTranscriptSearch:
 
         for result in results:
             video_embed_data = PycordEmbedCreator.EmbedData(
-                title=f"""Starts at {result['start']} seconds, duration {result['duration']} seconds.""",
+                title=f"""Starts at {result["start"]} seconds, duration {result["duration"]} seconds.""",
                 description=f"""{result["context_before"]} `{result["token"]}` {result["context_after"]}""",
                 video=PycordEmbedCreator.EmbedVideo(url=f"""https://www.youtube.com/watch?v={result["video_id"]}&t={int(result["start"])}s"""),
                 # url=f"""https://www.youtube.com/watch?v={result["video_id"]}&t={int(result["start"])}s""",
-                footer=PycordEmbedCreator.EmbedFooter(text=f"Starts at {result['start']} seconds, duration {result['duration']} seconds"),
+                footer=PycordEmbedCreator.EmbedFooter(text=f"""Starts at {result["start"]} seconds, duration {result["duration"]} seconds"""),
             )
 
             embeds.append(PycordEmbedCreator.create_embed(embed_data=video_embed_data))
