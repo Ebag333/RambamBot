@@ -4,11 +4,15 @@ import urllib.parse
 import discord.ext
 import markdownify
 import requests
+import concurrent.futures
 
-import helpers.pycord_helpers
+from helpers.pycord_helpers import DiscordEmbedCreator, DiscordEmbedPaginator
+import helpers.helpers
 
-PycordEmbedCreator = helpers.pycord_helpers.DiscordEmbedCreator()
-PycordPaginator = helpers.pycord_helpers.DiscordEmbedPaginator()
+PycordEmbedCreator = DiscordEmbedCreator()
+PycordPaginator = DiscordEmbedPaginator()
+MatchingHelpers = helpers.helpers.MatchingHelpers()
+BibleBooks = helpers.helpers.BibleBooks
 
 
 class SefariaAPI:
@@ -18,6 +22,8 @@ class SefariaAPI:
         self.sefaria_manuscripts = f"{self.sefaria_api_base_url}/manuscripts/"
         self.sefaria_lexicon = f"{self.sefaria_api_base_url}/words/"
         self.sefaria_index = self.fetch_sefaria_index()
+        self.sefaria_index_titles = [index.get("title") for index in self.sefaria_index if index.get("title")]
+        self.sefaria_versions = self.fetch_sefaria_versions(titles=self.sefaria_index_titles)
 
     def fetch_sefaria_index(self) -> list[dict]:
         """
@@ -48,49 +54,56 @@ class SefariaAPI:
 
         return flattened
 
-    def fetch_sefaria_versions(self, *, titles):
+    def fetch_sefaria_versions(self, *, titles, max_threads=50):
         if isinstance(titles, str):
             titles = [titles]
 
         versions = []
+        count = 0
 
-        for title in titles:
+        def fetch_version(title):
+            nonlocal count
+            count += 1
+            # print(f"Fetching versions for {title} [{count}/{len(titles)}]")
             url = f"{self.sefaria_api_base_url}/texts/versions/{title}"
             response = requests.get(url)
 
             if response.status_code == 200:
-                versions.append(response.json())
+                return response.json()
             else:
                 raise Exception(f"Failed to fetch data from Sefaria API. Status code: {response.status_code}")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
+            future_to_title = {executor.submit(fetch_version, title): title for title in titles}
+            for future in concurrent.futures.as_completed(future_to_title):
+                try:
+                    versions.append(future.result())
+                except Exception as exc:
+                    title = future_to_title[future]
+                    print(f"{title} generated an exception: {exc}")
+
+        versions = [d for sublist in versions for d in sublist]
+        versions = [d for d in versions if "title" in d and "versionTitle" in d and "languageFamilyName" in d]
 
         return versions
 
     def get_sefaria_text(self, *, reference: str, version: str = None, language: str = None, fill_in_missing_segments: bool = True) -> list[discord.ext.pages.Page]:
+        parsed_reference = BibleBooks.extract_book_reference(user_input=reference)
 
-        if language:
-            language = language.lower()
+        best_versions = MatchingHelpers.fuzzy_match_best_dicts(data_list=self.sefaria_versions, target_fields=["title", "versionTitle", "language"], target_values=[parsed_reference["book"], version, language])
 
-        if not version and not language:
-            version = "primary"
-        if version and language:
-            version = f"{language}|{version}"
-        elif language and not version:
-            version = language
-
-        if fill_in_missing_segments:
-            fill_in_missing_segments = 1
+        if best_versions:
+            sefaria_version = f"""{best_versions[0].get("languageFamilyName")}|{best_versions[0].get("versionTitle")}"""
         else:
-            fill_in_missing_segments = 0
+            sefaria_version = None
 
         params = {
             "return_format": "default",
-            "version": version,
-            "fill_in_missing_segments": fill_in_missing_segments,
+            "version": sefaria_version or "primary",
+            "fill_in_missing_segments": 1 if fill_in_missing_segments else 0,
         }
 
-        url = f"{self.sefaria_api_base_url}/v3/texts/{urllib.parse.quote(reference)}"
-        # url = urllib.parse.quote(url)
-        print(url)
+        url = f"""{self.sefaria_api_base_url}/v3/texts/{urllib.parse.quote(parsed_reference["reference"])}"""
 
         headers = {"accept": "application/json"}
 
@@ -112,7 +125,7 @@ class SefariaAPI:
                 PycordEmbedCreator.EmbedField(name="Fill Missing Segments", value="True" if fill_in_missing_segments else "False", inline=True),
             ],
             footer=PycordEmbedCreator.EmbedFooter(
-                text=f"Results from Sefaria"),
+                text=f"""Results from Sefaria ({best_versions[0].get("versionTitle")})"""),
         )
         header_embed = PycordEmbedCreator.create_embed(embed_data=header_embed_data)
 

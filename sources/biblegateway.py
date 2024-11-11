@@ -6,9 +6,11 @@ import discord.ext
 import markdownify
 
 import helpers.pycord_helpers
+import helpers.helpers
 
 PycordEmbedCreator = helpers.pycord_helpers.DiscordEmbedCreator()
 PycordPaginator = helpers.pycord_helpers.DiscordEmbedPaginator()
+BibleBooks = helpers.helpers.BibleBooks
 
 
 @dataclass
@@ -194,7 +196,8 @@ class BibleGateway:
 
     @staticmethod
     def fetch_verse(*, verses: str, version: str = "NRSVUE") -> list[discord.ext.pages.Page]:
-        verses_data = biblescrapeway.query(verses, version=version)
+        parsed_reference = BibleBooks.extract_book_reference(user_input=verses)
+        verses_data = biblescrapeway.query(parsed_reference["reference"], version=version)
 
         embeds = []
 
