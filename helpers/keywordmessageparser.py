@@ -35,14 +35,4 @@ class KeywordMessageParser:
         # Remove all really broad references, like whole chapters
         combined_matches = [item for item in combined_matches if re.search(r"\d+[:.\s]\d+", item[2])]
 
-        all_embeds = []
-
-        for _, source, reference in combined_matches:
-            if source == "biblegateway":
-                embeds = BibleGateway.fetch_verse(verses=reference)
-                all_embeds.extend(embeds)
-            elif source == "sefaria":
-                embeds = SefariaAPI.get_sefaria_text(reference=reference, language="English")
-                all_embeds.extend(embeds)
-
-        return all_embeds
+        return combined_matches

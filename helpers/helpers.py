@@ -1,7 +1,8 @@
-import fuzzywuzzy.fuzz
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Optional
+
+import fuzzywuzzy.fuzz
 
 
 class MatchingHelpers:
@@ -81,23 +82,25 @@ class BibleBooks:
                 return book.get("book", reference)
         return reference
 
-    def get_books(self) -> list[str]:
+    @classmethod
+    def get_books(cls) -> list[str]:
         """
         Returns the list of books.
         """
-        return list(self.books)
+        return list(cls.bible_books_list)
 
-    def convert_version(self, version: str) -> Optional[str]:
+    @classmethod
+    def convert_version(cls, *, version: str) -> Optional[str]:
         """
         Convert between short and long version of the Bible version name.
         :param version: The short or long version name to convert.
         :return: The corresponding long or short version name if found, else None.
         """
         # Check if it's a short version
-        if version in self.versions:
-            return self.versions[version]
+        if version in cls.versions:
+            return cls.versions[version]
         # Check if it's a long version
-        for short, long in self.versions.items():
+        for short, long in cls.versions.items():
             if version.lower() == long.lower():
                 return short
         return None

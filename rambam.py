@@ -4,6 +4,7 @@ import discord
 from discord.ext import bridge
 from discord.ext.pages import Paginator
 
+import helpers.helpers
 import helpers.keywordmessageparser
 import sources
 
@@ -13,6 +14,7 @@ SefariaAPI = sources.sefaria.SefariaAPI()
 YouTubeSearch = sources.filmot.YouTubeTranscriptSearch()
 BibleGateway = sources.biblegateway.BibleGateway()
 KeywordReferenceSearch = helpers.keywordmessageparser.KeywordMessageParser(sefaria_index=SefariaAPI.sefaria_index)
+BibleBooks = helpers.helpers.BibleBooks
 
 
 def main() -> None:
@@ -110,9 +112,19 @@ def main() -> None:
 
         print(message_dict)
 
-        embeds = KeywordReferenceSearch.parse_message(message=message_dict.get("content"))
-        if embeds:
-            paginator = Paginator(pages=embeds)
+        combined_matches = KeywordReferenceSearch.parse_message(message=message_dict.get("content"))
+        if combined_matches:
+            all_embeds = []
+
+            for _, source, reference in combined_matches:
+                if source == "biblegateway":
+                    embeds = BibleGateway.fetch_verse(verses= BibleBooks.extract_book_reference(user_input=reference)["reference"])
+                    all_embeds.extend(embeds)
+                elif source == "sefaria":
+                    embeds = SefariaAPI.get_sefaria_text(reference=BibleBooks.extract_book_reference(user_input=reference)["reference"], language="English")
+                    all_embeds.extend(embeds)
+
+            paginator = Paginator(pages=all_embeds)
 
             # await paginator.send(ctx.interaction, target=message.channel)  # Use paginator to respond with the embeds
             await paginator.send(ctx, target=message.channel)  # Use paginator to respond with the embeds
