@@ -1,13 +1,13 @@
+import concurrent.futures
 import re
 import urllib.parse
 
 import discord.ext
 import markdownify
 import requests
-import concurrent.futures
 
-from helpers.pycord_helpers import DiscordEmbedCreator, DiscordEmbedPaginator
 import helpers.helpers
+from helpers.pycord_helpers import DiscordEmbedCreator, DiscordEmbedPaginator
 
 PycordEmbedCreator = DiscordEmbedCreator()
 PycordPaginator = DiscordEmbedPaginator()
@@ -74,7 +74,7 @@ class SefariaAPI:
             if response.status_code == 200:
                 return response.json()
             else:
-                print(f"Failed to fetch version data for {title} from Sefaria API. Status code: {response.status_code}")
+                raise Exception(f"Failed to fetch version data for {title} from Sefaria API. Status code: {response.status_code}")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_to_title = {executor.submit(fetch_version, title): title for title in titles}
