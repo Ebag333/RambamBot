@@ -74,7 +74,7 @@ class SefariaAPI:
             if response.status_code == 200:
                 return response.json()
             else:
-                print(f"Failed to fetch data from Sefaria API. Status code: {response.status_code}")
+                print(f"Failed to fetch version data for {title} from Sefaria API. Status code: {response.status_code}")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_to_title = {executor.submit(fetch_version, title): title for title in titles}

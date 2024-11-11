@@ -1,17 +1,14 @@
 import re
 
-import sources.biblegateway
-import sources.sefaria
+import helpers.helpers
 
-SefariaAPI = sources.sefaria.SefariaAPI()
-BibleGateway = sources.biblegateway.BibleGateway()
-BibleData = sources.biblegateway.BibleData
+BibleData = helpers.helpers.BibleBooks
 
 
 class KeywordMessageParser:
-    def __init__(self):
-        self.christian_titles = BibleData.books
-        self.jewish_titles = [d["title"] for d in SefariaAPI.sefaria_index if "title" in d]
+    def __init__(self, *, sefaria_index):
+        self.christian_titles = BibleData.bible_books_list
+        self.jewish_titles = [d["title"] for d in sefaria_index if "title" in d]
         self.jewish_titles = [title for title in self.jewish_titles if title not in self.christian_titles]
 
     def parse_message(self, message: str):
