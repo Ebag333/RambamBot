@@ -17,6 +17,7 @@ BibleBooks = helpers.helpers.BibleBooks
 
 class SefariaAPI:
     def __init__(self):
+        print("Initializing Sefaria")
         self.sefaria_api_base_url = "https://www.sefaria.org/api"
         self.sefaria_texts = f"{self.sefaria_api_base_url}/v3/texts/"
         self.sefaria_manuscripts = f"{self.sefaria_api_base_url}/manuscripts/"
@@ -24,6 +25,7 @@ class SefariaAPI:
         self.sefaria_index = self.fetch_sefaria_index()
         self.sefaria_index_titles = [index.get("title") for index in self.sefaria_index if index.get("title")]
         self.sefaria_versions = self.fetch_sefaria_versions(titles=self.sefaria_index_titles)
+        print("Sefaria initialized")
 
     def fetch_sefaria_index(self) -> list[dict]:
         """
@@ -72,7 +74,7 @@ class SefariaAPI:
             if response.status_code == 200:
                 return response.json()
             else:
-                print(f"Failed to fetch data from Sefaria API. Status code: {response.status_code}")
+                print(f"Failed to fetch version data for {title} from Sefaria API. Status code: {response.status_code}")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_to_title = {executor.submit(fetch_version, title): title for title in titles}

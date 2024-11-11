@@ -7,10 +7,12 @@ from discord.ext.pages import Paginator
 import helpers.keywordmessageparser
 import sources
 
+print("Starting bot")
+
 SefariaAPI = sources.sefaria.SefariaAPI()
 YouTubeSearch = sources.filmot.YouTubeTranscriptSearch()
 BibleGateway = sources.biblegateway.BibleGateway()
-KeywordReferenceSearch = helpers.keywordmessageparser.KeywordMessageParser()
+KeywordReferenceSearch = helpers.keywordmessageparser.KeywordMessageParser(sefaria_index=SefariaAPI.sefaria_index)
 
 
 def main() -> None:
