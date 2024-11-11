@@ -4,7 +4,7 @@ import discord
 from discord.ext import bridge
 from discord.ext.pages import Paginator
 
-import helpers
+import helpers.keywordmessageparser
 import sources
 
 SefariaAPI = sources.sefaria.SefariaAPI()
@@ -118,6 +118,7 @@ def main() -> None:
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         print("DISCORD_TOKEN not found in environment variables")
+        exit()
 
     bot.run(token)  # run the bot with the token
 
