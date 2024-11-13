@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import discord
-from discord.ext.pages import Page
 
 
 class DiscordEmbedCreator:
@@ -85,13 +84,13 @@ class DiscordEmbedCreator:
         def to_discord_embed(self) -> discord.Embed:
             # Truncate fields to meet character limits
             if self.title and len(self.title) > self.MAX_TITLE_LENGTH:
-                self.title = f"self.title[:self.MAX_TITLE_LENGTH]..."
+                self.title = f"{self.title[:self.MAX_TITLE_LENGTH]}..."
             if self.description and len(self.description) > self.MAX_DESCRIPTION_LENGTH:
-                self.description = f"self.description[:self.MAX_DESCRIPTION_LENGTH]..."
+                self.description = f"{self.description[:self.MAX_DESCRIPTION_LENGTH]}..."
             if self.footer and len(self.footer.text) > self.MAX_FOOTER_TEXT_LENGTH:
-                self.footer.text = f"self.footer.text[:self.MAX_FOOTER_TEXT_LENGTH]..."
+                self.footer.text = f"{self.footer.text[:self.MAX_FOOTER_TEXT_LENGTH]}..."
             if self.author and len(self.author.name) > self.MAX_AUTHOR_NAME_LENGTH:
-                self.author.name = f"self.author.name[:self.MAX_AUTHOR_NAME_LENGTH]..."
+                self.author.name = f"{self.author.name[:self.MAX_AUTHOR_NAME_LENGTH]}..."
 
             # Truncate fields to meet the maximum number of allowed fields
             if len(self.fields) > self.MAX_FIELDS:

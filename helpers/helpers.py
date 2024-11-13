@@ -1,3 +1,7 @@
+"""
+This module provides utility classes for fuzzy matching and handling Bible book references.
+"""
+
 import re
 from dataclasses import dataclass, field
 from typing import Optional
@@ -6,6 +10,12 @@ import fuzzywuzzy.fuzz
 
 
 class MatchingHelpers:
+    """
+    A helper class for performing fuzzy matching operations on dictionaries.
+
+    This class provides static methods to help find the best match among dictionaries
+    based on specified fields and values using fuzzy matching.
+    """
 
     @staticmethod
     def fuzzy_match_best_dicts(*, data_list: list[dict], target_fields: list[str], target_values: list[str], threshold: int = 80) -> list[dict]:
@@ -40,52 +50,101 @@ class MatchingHelpers:
 
 @dataclass
 class BibleBooks:
+    """
+    A utility class for managing Bible book information and extracting references.
+
+    This class provides methods to extract book titles, chapters, and verses from user input,
+    resolve book names from abbreviations, and convert between versions of the Bible.
+    """
+
     @classmethod
     def extract_book_reference(cls, user_input: str) -> dict[str, Optional[str]]:
         """
         Extract the book title, chapter, and verse from a user input string.
 
         :param user_input: The input string containing the book title and references.
-        :return: A dictionary containing the extracted book title, chapter, and verse.
+        :return: A dictionary containing the extracted book title, chapter, verse, side, and validity status.
         """
-        # Use regex to find the part of the string that contains only the book title
-        match = re.match(r"^(\d*\s*[A-Za-z]+(?:\s[A-Za-z]+)*)", user_input)
+
+        # Breakdown of the regex:
+        # ^(\d*\s*[A-Za-z]+(?:\s[A-Za-z]+)*)  -> Matches the book title, which may include an optional number prefix and multiple words
+        #   ^                                 -> Start of the string
+        #   (\d*\s*[A-Za-z]+(?:\s[A-Za-z]+)*) -> Captures the book name, possibly with a leading number (e.g., "1 Samuel")
+        #     \d*                            -> Matches zero or more digits (e.g., "1" in "1 Samuel")
+        #     \s*                            -> Matches zero or more whitespace characters
+        #     [A-Za-z]+                      -> Matches one or more alphabetic characters (e.g., the book name itself)
+        #     (?:\s[A-Za-z]+)*               -> Non-capturing group to match additional words in the book name (e.g., "Song of Solomon")
+        # (?:\s+(\d+)([ab])?(?:[:.](\d+(?:-\d+)?))?)? -> Matches the chapter, side, and verse information (optional)
+        #   \s+                              -> Matches one or more whitespace characters
+        #   (\d+)                            -> Captures the chapter number
+        #   ([ab])?                          -> Optionally captures the side (a or b)
+        #   (?:[:.](\d+(?:-\d+)?))?          -> Optionally matches the verse or verse range, preceded by ":" or "."
+        #     [:.]                          -> Matches either ":" or "."
+        #     (\d+(?:-\d+)?)                -> Captures the verse number or range (e.g., "5" or "5-10")
+        match = re.match(r"^(\d*\s*[A-Za-z]+(?:\s[A-Za-z]+)*)(?:\s+(\d+)([ab])?(?:[:.](\d+(?:-\d+)?))?)?", user_input)
         book = None
         chapter = None
         verse = None
+        side = None
+        valid = False
+        large_reference = False
 
         if match:
-            return_string = match.group(1).strip()
-            return_string = return_string.rstrip(".")
-            book = cls.get_book_name(reference=return_string)
+            book = cls.get_book_name(reference=match.group(1).strip())
+            chapter = match.group(2)
+            side = match.group(3)
+            verse = match.group(4)
 
-            # Remove the matched book part from user_input
-            remaining_input = user_input[len(match.group(0)):].strip()
+            # Determine if the reference is valid
+            if book and chapter:
+                valid = True
 
-            # Extract chapter and verse (including range if available)
-            chapter_verse_match = re.match(r"(\d+)(?:[:.](\d+(?:-\d+)?))?", remaining_input)
-            if chapter_verse_match:
-                chapter = chapter_verse_match.group(1)
-                verse = chapter_verse_match.group(2)
+            # Determine if the reference is a large reference (e.g., whole chapter or book or large verse range)
+            if not verse:
+                large_reference = True
+            elif "-" in verse:
+                start_verse, end_verse = map(int, verse.split("-"))
+                if end_verse - start_verse > 10:
+                    large_reference = True
+
+        # Format reference string
+        reference = f"{book}"
+        if chapter:
+            reference += f" {chapter}"
+        if side:
+            reference += f"{side}"
+        if verse:
+            reference += f":{verse}"
 
         return {
             "book": book,
             "chapter": chapter,
             "verse": verse,
-            "reference": f"{book} {chapter}:{verse}"
+            "side": side,
+            "reference": reference,
+            "valid": valid,
+            "large_reference": large_reference
         }
 
     @classmethod
     def get_book_name(cls, reference: str) -> str:
+        """
+        Resolve the book name from the given reference.
+
+        :param reference: The reference string containing the book name or abbreviation.
+        :return: The full book name if found, otherwise the original reference.
+        """
         for book in cls.bible_books:
             if reference.lower() in [abbr.lower() for abbr in book.get("abbreviations", [])]:
-                return book.get("book", reference)
+                return book.get("book", reference).strip()
         return reference
 
     @classmethod
     def get_books(cls) -> list[str]:
         """
-        Returns the list of books.
+        Get a list of all the books in the Bible.
+
+        :return: A list of book names in the Bible.
         """
         return list(cls.bible_books_list)
 
@@ -93,6 +152,7 @@ class BibleBooks:
     def convert_version(cls, *, version: str) -> Optional[str]:
         """
         Convert between short and long version of the Bible version name.
+
         :param version: The short or long version name to convert.
         :return: The corresponding long or short version name if found, else None.
         """
