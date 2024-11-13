@@ -1,8 +1,9 @@
-import requests
-import urllib.parse
 import re
-import discord
+import urllib.parse
+
 import discord.ext
+import requests
+
 import helpers.pycord_helpers
 
 PycordEmbedCreator = helpers.pycord_helpers.DiscordEmbedCreator()
@@ -65,7 +66,7 @@ class YouTubeTranscriptSearch:
         results = eval(results_json_str)  # Convert to dictionary (use with caution)
 
         parsed_results = []
-        for key, value in results.items():
+        for _, value in results.items():
             video_id = value.get("vid")
             hits = value.get("hits", [])
             for hit in hits:

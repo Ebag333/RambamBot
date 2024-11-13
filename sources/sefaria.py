@@ -174,13 +174,13 @@ class SefariaAPI:
         headers = {"accept": "application/json"}
         params = {}
         if lookup_ref:
-            params['lookup_ref'] = lookup_ref
+            params["lookup_ref"] = lookup_ref
         response = requests.get(url, headers=headers, params=params)
 
         if response.status_code == 200:
             data = response.json()
             if not data:
-                data = f"No lexicon entries found for '{word}'"
+                data = f"No lexicon entries found for: {word}"
 
             header_embed_data = PycordEmbedCreator.EmbedData(
                 title="Lexicon",
@@ -189,7 +189,7 @@ class SefariaAPI:
                     PycordEmbedCreator.EmbedField(name="Lookup Reference", value=lookup_ref, inline=True),
                 ],
                 footer=PycordEmbedCreator.EmbedFooter(
-                    text=f"Results from Sefaria"),
+                    text="Results from Sefaria"),
             )
             header_embed = PycordEmbedCreator.create_embed(embed_data=header_embed_data)
 
@@ -205,7 +205,7 @@ class SefariaAPI:
                     entry_senses = self.flatten_definitions(definitions_dict=entry.get("content", {}).get("senses", []))
 
                     # Removing reference links
-                    entry_senses = [re.sub(r'<a[^>]*>|</a>', '', sense) for sense in entry_senses]
+                    entry_senses = [re.sub(r"<a[^>]*>|</a>", "", sense) for sense in entry_senses]
                     # Convert to Markdown
                     entry_senses = [markdownify.markdownify(sense) for sense in entry_senses]
 
