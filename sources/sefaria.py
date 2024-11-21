@@ -197,11 +197,10 @@ class SefariaAPI:
             if source_ref:
                 url = f"https://www.sefaria.org/{source_ref}?lang=bi&with=all&lang2=en"
             else:
-                url = None
+                url = ""
 
             line_embed_data = PycordEmbedCreator.EmbedData(
-                description=f"""{link.get("category")}: {link.get("sourceRef")}""",
-                url=url,
+                description=f"""{link.get("category")}: [{link.get("sourceRef")}]({url})""",
             )
 
             embeds.append(PycordEmbedCreator.create_embed(embed_data=line_embed_data))
