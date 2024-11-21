@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import discord
+from discord.ext import pages
 
 
 class DiscordEmbedCreator:

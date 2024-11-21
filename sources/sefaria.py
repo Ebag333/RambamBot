@@ -57,7 +57,7 @@ class SefariaAPI:
 
         return flattened
 
-    def fetch_sefaria_versions(self, *, titles, max_threads=50):
+    def fetch_sefaria_versions(self, *, titles: [str, list], max_threads: int = 50):
         if isinstance(titles, str):
             titles = [titles]
 
@@ -89,6 +89,71 @@ class SefariaAPI:
         versions = [d for d in versions if "title" in d and "versionTitle" in d and "languageFamilyName" in d]
 
         return versions
+
+    def get_sefaria_related(self, *, reference: str):
+        parsed_reference = BibleBooks.extract_book_reference(user_input=reference)
+
+        if parsed_reference:
+            url = f"""{self.sefaria_api_base_url}/related/{urllib.parse.quote(parsed_reference.get("reference"))}"""
+            headers = {"accept": "application/json"}
+
+            response = requests.get(url, headers=headers)
+            response = response.json()
+
+            return response
+        else:
+            return None
+
+    def get_sefaria_codex(self, *, reference: str):
+        codexes = self.get_sefaria_related(reference=reference).get("manuscripts", [])
+
+        embeds = []
+
+        for codex in codexes:
+
+            line_embed_data = PycordEmbedCreator.EmbedData(
+                title=f"""{codex.get("manuscript", {}).get("title", "")}""",
+                image=PycordEmbedCreator.EmbedImage(
+                    url=codex.get("image_url")
+                ),
+                footer=PycordEmbedCreator.EmbedFooter(
+                    text=f"""Results from Sefaria ({reference})"""),
+            )
+            embeds.append(PycordEmbedCreator.create_embed(embed_data=line_embed_data))
+
+        paged_embeds = PycordPaginator.create_paginated_embeds(embeds=embeds)
+
+        return paged_embeds
+
+    def get_sefaria_links(self, *, reference: str):
+        links = self.get_sefaria_related(reference=reference).get("links", [])
+        parsed_reference = urllib.parse.quote(BibleBooks.extract_book_reference(user_input=reference))
+
+        embeds = []
+
+        header_embed_data = PycordEmbedCreator.EmbedData(
+            title=reference,
+            url=f"https://www.sefaria.org/{parsed_reference}?lang=bi&with=all&lang2=en",
+            footer=PycordEmbedCreator.EmbedFooter(
+                text=f"""Results from Sefaria"""),
+        )
+        header_embed = PycordEmbedCreator.create_embed(embed_data=header_embed_data)
+
+        for link in links:
+            # https://www.sefaria.org/Isaiah.7.14?lang=bi&with=all&lang2=en
+
+            source_ref = urllib.parse.quote(link.get("sourceRef"))
+
+            line_embed_data = PycordEmbedCreator.EmbedData(
+                description=f"""{link.get("category")}: {link.get("sourceRef")}""",
+                url=f"https://www.sefaria.org/{source_ref}?lang=bi&with=all&lang2=en",
+            )
+
+            embeds.append(PycordEmbedCreator.create_embed(embed_data=line_embed_data))
+
+        paged_embeds = PycordPaginator.create_paginated_embeds(embeds=embeds, header_embed=header_embed)
+
+        return paged_embeds
 
     def get_sefaria_text(self, *, reference: str, version: str = None, language: str = None, fill_in_missing_segments: bool = True) -> list[discord.ext.pages.Page]:
         parsed_reference = BibleBooks.extract_book_reference(user_input=reference)

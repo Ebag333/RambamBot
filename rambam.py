@@ -57,6 +57,26 @@ def main() -> None:
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
 
+    @bot.slash_command(name="codex", description="Fetch an image of a codex from Sefaria")
+    async def sefaria_codex(ctx: discord.ApplicationContext, reference: str):
+        # Defer the interaction to keep it open while processing
+        await ctx.defer()
+
+        embeds = SefariaAPI.get_sefaria_codex(reference=reference)
+        paginator = Paginator(pages=embeds)
+
+        await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
+
+    @bot.slash_command(name="references", description="Fetch cross references and commentary from Sefaria")
+    async def sefaria_references(ctx: discord.ApplicationContext, reference: str):
+        # Defer the interaction to keep it open while processing
+        await ctx.defer()
+
+        embeds = SefariaAPI.get_sefaria_links(reference=reference)
+        paginator = Paginator(pages=embeds)
+
+        await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
+
     @bot.slash_command(name="bible", description="Fetch a reference")
     async def bible(ctx: discord.ApplicationContext, reference: str, version: str = "NRSVUE"):
         # Defer the interaction to keep it open while processing
