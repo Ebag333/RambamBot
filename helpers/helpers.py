@@ -32,10 +32,10 @@ class MatchingHelpers:
         matches = []
         for d in data_list:
             total_score = 0
-            for field, value in zip(target_fields, target_values):
+            for field_name, value in zip(target_fields, target_values):
                 if value is None:
                     continue
-                field_value = d.get(field, "")
+                field_value = d.get(field_name, "")
                 score = fuzzywuzzy.fuzz.ratio(field_value, value)
                 total_score += score
             # Only consider dictionaries with at least one score above threshold

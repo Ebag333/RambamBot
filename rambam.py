@@ -1,4 +1,5 @@
 import os
+import sys
 
 import discord
 from discord.ext import bridge
@@ -53,6 +54,26 @@ def main() -> None:
         await ctx.defer()
 
         embeds = SefariaAPI.get_sefaria_text(reference=reference, version=version, language=language, fill_in_missing_segments=fill_in_missing_segments)
+        paginator = Paginator(pages=embeds)
+
+        await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
+
+    @bot.slash_command(name="codex", description="Fetch an image of a codex from Sefaria")
+    async def sefaria_codex(ctx: discord.ApplicationContext, reference: str):
+        # Defer the interaction to keep it open while processing
+        await ctx.defer()
+
+        embeds = SefariaAPI.get_sefaria_codex(reference=reference)
+        paginator = Paginator(pages=embeds)
+
+        await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
+
+    @bot.slash_command(name="references", description="Fetch cross references and commentary from Sefaria")
+    async def sefaria_references(ctx: discord.ApplicationContext, reference: str):
+        # Defer the interaction to keep it open while processing
+        await ctx.defer()
+
+        embeds = SefariaAPI.get_sefaria_links(reference=reference)
         paginator = Paginator(pages=embeds)
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
@@ -132,7 +153,7 @@ def main() -> None:
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         print("DISCORD_TOKEN not found in environment variables")
-        exit()
+        sys.exit()
 
     bot.run(token)  # run the bot with the token
 

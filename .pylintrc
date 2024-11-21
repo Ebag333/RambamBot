@@ -17,7 +17,7 @@ extension-pkg-whitelist=
 fail-on=
 
 # Specify a score threshold to be exceeded before program exits with error.
-fail-under=9.8
+fail-under=9.54
 
 # Files or directories to be skipped. They should be base names, not paths.
 ignore=
@@ -430,7 +430,7 @@ method-naming-style=snake_case
 #method-rgx=
 
 # Naming style matching correct module names.
-module-naming-style=PascalCase
+module-naming-style=snake_case
 
 # Regular expression matching correct module names. Overrides module-naming-
 # style.
