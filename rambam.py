@@ -35,10 +35,8 @@ def main() -> None:
     @bot.slash_command(name="bdb", description="Get a lexicon entry from Sefaria.")
     async def bdb(ctx: discord.ApplicationContext, hebrew: str, lookup_ref: str = None):
         all_embeds = SefariaAPI.get_sefaria_lexicon(word=hebrew, lookup_ref=lookup_ref)
-
         show_disabled = bool(len(all_embeds) > 1)
-
-        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
+        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, show_indicator=show_disabled, author_check=False, timeout=600)
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
 
@@ -49,10 +47,8 @@ def main() -> None:
 
         results = YouTubeSearch.search_transcripts(query=search)
         all_embeds = YouTubeSearch.create_embeds(results=results)
-
         show_disabled = bool(len(all_embeds) > 1)
-
-        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
+        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, show_indicator=show_disabled, author_check=False, timeout=600)
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
 
@@ -62,10 +58,8 @@ def main() -> None:
         await ctx.defer()
 
         all_embeds = SefariaAPI.get_sefaria_text(reference=reference, version=version, language=language, fill_in_missing_segments=fill_in_missing_segments)
-
         show_disabled = bool(len(all_embeds) > 1)
-
-        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
+        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, show_indicator=show_disabled, author_check=False, timeout=600)
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
 
@@ -75,10 +69,8 @@ def main() -> None:
         await ctx.defer()
 
         all_embeds = SefariaAPI.get_sefaria_codex(reference=reference)
-
         show_disabled = bool(len(all_embeds) > 1)
-
-        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
+        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, show_indicator=show_disabled, author_check=False, timeout=600)
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
 
@@ -89,8 +81,7 @@ def main() -> None:
 
         all_embeds = SefariaAPI.get_sefaria_links(reference=reference)
         show_disabled = bool(len(all_embeds) > 1)
-
-        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
+        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, show_indicator=show_disabled, author_check=False, timeout=600)
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
 
@@ -100,10 +91,8 @@ def main() -> None:
         await ctx.defer()
 
         all_embeds = BibleGateway.fetch_verse(verses=reference, version=version)
-
         show_disabled = bool(len(all_embeds) > 1)
-
-        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
+        paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, show_indicator=show_disabled, author_check=False, timeout=600)
 
         await paginator.respond(ctx.interaction)  # Use paginator to respond with the embeds
 
@@ -165,8 +154,7 @@ def main() -> None:
                     all_embeds.extend(embeds)
 
             show_disabled = bool(len(all_embeds) > 1)
-
-            paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
+            paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, show_indicator=show_disabled, author_check=False, timeout=600)
 
             # await paginator.send(ctx.interaction, target=message.channel)  # Use paginator to respond with the embeds
             await paginator.send(ctx, target=message.channel)  # Use paginator to respond with the embeds
