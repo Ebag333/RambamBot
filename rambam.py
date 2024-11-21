@@ -36,10 +36,7 @@ def main() -> None:
     async def bdb(ctx: discord.ApplicationContext, hebrew: str, lookup_ref: str = None):
         all_embeds = SefariaAPI.get_sefaria_lexicon(word=hebrew, lookup_ref=lookup_ref)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -53,10 +50,7 @@ def main() -> None:
         results = YouTubeSearch.search_transcripts(query=search)
         all_embeds = YouTubeSearch.create_embeds(results=results)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -69,10 +63,7 @@ def main() -> None:
 
         all_embeds = SefariaAPI.get_sefaria_text(reference=reference, version=version, language=language, fill_in_missing_segments=fill_in_missing_segments)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -85,10 +76,7 @@ def main() -> None:
 
         all_embeds = SefariaAPI.get_sefaria_codex(reference=reference)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -100,10 +88,7 @@ def main() -> None:
         await ctx.defer()
 
         all_embeds = SefariaAPI.get_sefaria_links(reference=reference)
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -116,10 +101,7 @@ def main() -> None:
 
         all_embeds = BibleGateway.fetch_verse(verses=reference, version=version)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -182,10 +164,7 @@ def main() -> None:
                     embeds = SefariaAPI.get_sefaria_text(reference=BibleBooks.extract_book_reference(user_input=reference)["reference"], language="English")
                     all_embeds.extend(embeds)
 
-            if len(all_embeds) > 1:
-                show_disabled = True
-            else:
-                show_disabled = False
+            show_disabled = bool(len(all_embeds) > 1)
 
             paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
