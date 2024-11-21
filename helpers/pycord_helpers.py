@@ -163,6 +163,11 @@ class DiscordEmbedCreator:
 
     @staticmethod
     def create_embed(*, embed_data: "DiscordEmbedCreator.EmbedData") -> discord.Embed:
+        """
+
+        :param embed_data:
+        :return:
+        """
         embed = embed_data.to_discord_embed()
         return embed
 
@@ -195,6 +200,14 @@ class DiscordEmbedPaginator:
 
     @staticmethod
     def create_paginated_embeds(*, embeds: list[discord.Embed], header_embed: Optional[discord.Embed] = None, footer_embed: Optional[discord.Embed] = None, embeds_per_page: int = 10) -> list[discord.ext.pages.Page]:
+        """
+        
+        :param embeds:
+        :param header_embed:
+        :param footer_embed:
+        :param embeds_per_page:
+        :return:
+        """
         # Adjust embeds_per_page based on the presence of header and footer
         max_embeds_per_page = embeds_per_page
         if header_embed:
