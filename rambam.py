@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -9,7 +10,9 @@ import helpers.helpers
 import helpers.keywordmessageparser
 import sources
 
-print("Starting bot")
+logging.basicConfig(level=logging.INFO)
+
+logging.info("Starting bot")
 
 SefariaAPI = sources.sefaria.SefariaAPI()
 YouTubeSearch = sources.filmot.YouTubeTranscriptSearch()
@@ -19,7 +22,6 @@ BibleBooks = helpers.helpers.BibleBooks
 
 
 def main() -> None:
-    print("Starting bot")
     intents = discord.Intents.default()
     intents.messages = True
     intents.message_content = True  # Enable access to message content
@@ -28,16 +30,13 @@ def main() -> None:
 
     @bot.event
     async def on_ready():
-        print(f"{bot.user} is ready and online!")
+        logging.info(f"{bot.user} is ready and online!")
 
     @bot.slash_command(name="bdb", description="Get a lexicon entry from Sefaria.")
     async def bdb(ctx: discord.ApplicationContext, hebrew: str, lookup_ref: str = None):
         all_embeds = SefariaAPI.get_sefaria_lexicon(word=hebrew, lookup_ref=lookup_ref)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -51,10 +50,7 @@ def main() -> None:
         results = YouTubeSearch.search_transcripts(query=search)
         all_embeds = YouTubeSearch.create_embeds(results=results)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -67,10 +63,7 @@ def main() -> None:
 
         all_embeds = SefariaAPI.get_sefaria_text(reference=reference, version=version, language=language, fill_in_missing_segments=fill_in_missing_segments)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -83,10 +76,7 @@ def main() -> None:
 
         all_embeds = SefariaAPI.get_sefaria_codex(reference=reference)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -98,10 +88,7 @@ def main() -> None:
         await ctx.defer()
 
         all_embeds = SefariaAPI.get_sefaria_links(reference=reference)
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -114,10 +101,7 @@ def main() -> None:
 
         all_embeds = BibleGateway.fetch_verse(verses=reference, version=version)
 
-        if len(all_embeds) > 1:
-            show_disabled = True
-        else:
-            show_disabled = False
+        show_disabled = bool(len(all_embeds) > 1)
 
         paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -153,20 +137,20 @@ def main() -> None:
         }
 
         if message.type != discord.MessageType.default:
-            print("Non-text message, skip!")
+            logging.info("Non-text message, skip!")
             return
 
         if message_dict.get("author", {}).get("bot", False):
-            print("Bot message, skip!")
+            logging.info("Bot message, skip!")
             # Message is coming from a bot, skip!
             return
 
         if message_dict.get("channel", {}).get("id") not in [1303123580514472067, 1303068218578960425]:
-            print("Wrong channel, skip!")
-            print(f"""Channel ID: {message_dict.get("channel", {}).get("id")}""")
+            logging.info("Wrong channel, skip!")
+            logging.info(f"Channel ID: {message_dict.get('channel', {}).get('id')}")
             return
 
-        print(message_dict)
+        logging.info(message_dict)
 
         combined_matches = KeywordReferenceSearch.parse_message(message=message_dict.get("content"))
         if combined_matches:
@@ -180,10 +164,7 @@ def main() -> None:
                     embeds = SefariaAPI.get_sefaria_text(reference=BibleBooks.extract_book_reference(user_input=reference)["reference"], language="English")
                     all_embeds.extend(embeds)
 
-            if len(all_embeds) > 1:
-                show_disabled = True
-            else:
-                show_disabled = False
+            show_disabled = bool(len(all_embeds) > 1)
 
             paginator = Paginator(pages=all_embeds, show_disabled=show_disabled, author_check=False, timeout=600)
 
@@ -192,7 +173,7 @@ def main() -> None:
 
     token = os.getenv("DISCORD_TOKEN")
     if not token:
-        print("DISCORD_TOKEN not found in environment variables")
+        logging.error("DISCORD_TOKEN not found in environment variables")
         sys.exit()
 
     bot.run(token)  # run the bot with the token
