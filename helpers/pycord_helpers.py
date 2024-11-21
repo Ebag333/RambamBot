@@ -6,14 +6,24 @@ from discord.ext import pages
 
 
 class DiscordEmbedCreator:
+    """
+    A utility class for creating Discord embed objects with structured data.
+    """
+
     @dataclass
     class EmbedFooter:
+        """
+        Represents the footer of an embed, including text and optional icon URLs.
+        """
         text: str
         icon_url: Optional[str] = None
         proxy_icon_url: Optional[str] = None
 
     @dataclass
     class EmbedImage:
+        """
+        Represents an image in an embed, including URL and optional proxy, height, and width.
+        """
         url: str
         proxy_url: Optional[str] = None
         height: Optional[int] = None
@@ -21,6 +31,9 @@ class DiscordEmbedCreator:
 
     @dataclass
     class EmbedThumbnail:
+        """
+        Represents a thumbnail in an embed, including URL and optional proxy, height, and width.
+        """
         url: str
         proxy_url: Optional[str] = None
         height: Optional[int] = None
@@ -28,6 +41,9 @@ class DiscordEmbedCreator:
 
     @dataclass
     class EmbedVideo:
+        """
+        Represents a video in an embed, including URL and optional proxy, height, and width.
+        """
         url: Optional[str] = None
         proxy_url: Optional[str] = None
         height: Optional[int] = None
@@ -35,6 +51,9 @@ class DiscordEmbedCreator:
 
     @dataclass
     class EmbedAuthor:
+        """
+        Represents the author of an embed, including name, URL, and optional icon URLs.
+        """
         name: str
         url: Optional[str] = None
         icon_url: Optional[str] = None
@@ -42,23 +61,35 @@ class DiscordEmbedCreator:
 
     @dataclass
     class EmbedProvider:
+        """
+        Represents the provider of an embed, including optional name and URL.
+        """
         name: Optional[str] = None
         url: Optional[str] = None
 
     @dataclass
     class EmbedField:
+        """
+        Represents a field in an embed, including name, value, and whether it should be inline.
+        """
         name: str
         value: str
         inline: bool = False
 
     @dataclass
     class EmbedFieldNewLine:
-        name = "\u200B"
-        value = "\u200B"
+        """
+        Represents a new line field in an embed, used for spacing.
+        """
+        name: str = "\u200B"
+        value: str = "\u200B"
         inline: bool = False
 
     @dataclass
     class EmbedData:
+        """
+        Represents the complete data for an embed, including title, description, fields, and other elements.
+        """
         title: Optional[str] = None
         description: Optional[str] = None
         url: Optional[str] = None
@@ -83,6 +114,11 @@ class DiscordEmbedCreator:
         MAX_TOTAL_CHARACTERS = 6000
 
         def to_discord_embed(self) -> discord.Embed:
+            """
+            Convert the EmbedData instance to a discord.Embed object.
+
+            :return: A discord.Embed object representing the current EmbedData.
+            """
             # Truncate fields to meet character limits
             if self.title and len(self.title) > self.MAX_TITLE_LENGTH:
                 self.title = f"{self.title[:self.MAX_TITLE_LENGTH]}..."
@@ -164,23 +200,34 @@ class DiscordEmbedCreator:
     @staticmethod
     def create_embed(*, embed_data: "DiscordEmbedCreator.EmbedData") -> discord.Embed:
         """
+        Create a discord.Embed object from the provided EmbedData.
 
-        :param embed_data:
-        :return:
+        :param embed_data: The data to use for creating the embed.
+        :return: A discord.Embed object.
         """
         embed = embed_data.to_discord_embed()
         return embed
 
 
 class DiscordEmbedPaginator:
+    """
+    A utility class for creating paginated Discord embeds.
+    """
+
     @dataclass
     class EmbedFooter:
+        """
+        Represents the footer of an embed, including text and optional icon URLs.
+        """
         text: str
         icon_url: Optional[str] = None
         proxy_icon_url: Optional[str] = None
 
     @dataclass
     class EmbedData:
+        """
+        Represents the complete data for an embed, including title, description, footer, and other optional elements.
+        """
         title: Optional[str] = None
         description: Optional[str] = None
         url: Optional[str] = None
@@ -188,6 +235,11 @@ class DiscordEmbedPaginator:
         footer: Optional["DiscordEmbedPaginator.EmbedFooter"] = None
 
         def to_discord_embed(self) -> discord.Embed:
+            """
+            Convert the EmbedData instance to a discord.Embed object.
+
+            :return: A discord.Embed object representing the current EmbedData.
+            """
             embed = discord.Embed(
                 title=self.title,
                 description=self.description,
@@ -199,14 +251,15 @@ class DiscordEmbedPaginator:
             return embed
 
     @staticmethod
-    def create_paginated_embeds(*, embeds: list[discord.Embed], header_embed: Optional[discord.Embed] = None, footer_embed: Optional[discord.Embed] = None, embeds_per_page: int = 10) -> list[discord.ext.pages.Page]:
+    def create_paginated_embeds(*, embeds: list[discord.Embed], header_embed: Optional[discord.Embed] = None, footer_embed: Optional[discord.Embed] = None, embeds_per_page: int = 10) -> list[pages.Page]:
         """
-        
-        :param embeds:
-        :param header_embed:
-        :param footer_embed:
-        :param embeds_per_page:
-        :return:
+        Create a list of paginated embeds with optional header and footer embeds.
+
+        :param embeds: A list of discord.Embed objects to paginate.
+        :param header_embed: An optional discord.Embed to be added as the header of each page.
+        :param footer_embed: An optional discord.Embed to be added as the footer of each page.
+        :param embeds_per_page: The number of embeds to include per page.
+        :return: A list of pages.Page objects representing the paginated embeds.
         """
         # Adjust embeds_per_page based on the presence of header and footer
         max_embeds_per_page = embeds_per_page
@@ -228,7 +281,7 @@ class DiscordEmbedPaginator:
                 if footer_embed:
                     current_page.append(footer_embed)
 
-                paginated_embeds.append(discord.ext.pages.Page(embeds=current_page))
+                paginated_embeds.append(pages.Page(embeds=current_page))
                 current_page = []
 
         # Add the last page if it has any remaining embeds
@@ -239,6 +292,6 @@ class DiscordEmbedPaginator:
             if footer_embed:
                 current_page.append(footer_embed)
 
-            paginated_embeds.append(discord.ext.pages.Page(embeds=current_page))
+            paginated_embeds.append(pages.Page(embeds=current_page))
 
         return paginated_embeds
