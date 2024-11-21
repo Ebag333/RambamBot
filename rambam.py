@@ -1,4 +1,5 @@
 import os
+import sys
 
 import discord
 from discord.ext import bridge
@@ -152,7 +153,7 @@ def main() -> None:
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         print("DISCORD_TOKEN not found in environment variables")
-        exit()
+        sys.exit()
 
     bot.run(token)  # run the bot with the token
 

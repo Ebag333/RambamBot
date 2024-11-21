@@ -1,11 +1,11 @@
 import concurrent.futures
 import re
 import urllib.parse
+from typing import Optional, Any, Union
 
 import discord.ext
 import markdownify
 import requests
-from typing import Optional, Any, Union
 
 import helpers.helpers
 from helpers.pycord_helpers import DiscordEmbedCreator, DiscordEmbedPaginator
@@ -222,7 +222,11 @@ class SefariaAPI:
         """
         parsed_reference = BibleBooks.extract_book_reference(user_input=reference)
 
-        best_versions = MatchingHelpers.fuzzy_match_best_dicts(data_list=self.sefaria_versions, target_fields=["title", "versionTitle", "language"], target_values=[parsed_reference["book"], version, language])
+        best_versions = MatchingHelpers.fuzzy_match_best_dicts(
+            data_list=self.sefaria_versions,
+            target_fields=["title", "versionTitle", "language"],
+            target_values=[parsed_reference["book"], version, language]
+        )
 
         if best_versions:
             sefaria_version = f"""{best_versions[0].get("languageFamilyName")}|{best_versions[0].get("versionTitle")}"""
