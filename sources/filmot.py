@@ -1,3 +1,4 @@
+import json
 import re
 import urllib.parse
 
@@ -34,7 +35,7 @@ class YouTubeTranscriptSearch:
 
             if response.status_code == 200:
                 html_content = response.text
-                results = self.parse_results(html_content)
+                results = self.parse_results(html_content=html_content)
                 print("Found results")
 
                 if not results:
@@ -49,7 +50,8 @@ class YouTubeTranscriptSearch:
 
         return all_results
 
-    def parse_results(self, html_content: str) -> [dict, bool]:
+    @staticmethod
+    def parse_results(*, html_content: str) -> [dict, bool]:
         """
         Parse the HTML content to extract transcript results.
 
@@ -57,13 +59,17 @@ class YouTubeTranscriptSearch:
         :return: A list of parsed results.
         """
         # Extract JavaScript object from HTML content using regex
-        match = re.search(r"window\.results\s*=\s*(\{.*?\});", html_content, re.DOTALL)
+        match = re.search(r"window\.results\s*=\s*(\{.*?});", html_content, re.DOTALL)
         if not match:
             return False
 
         results_json_str = match.group(1)
         results_json_str = re.sub(r"\s+", " ", results_json_str)  # Remove extra whitespace
-        results = eval(results_json_str)  # Convert to dictionary (use with caution)
+
+        try:
+            results = json.loads(results_json_str)  # Convert to dictionary safely
+        except json.JSONDecodeError:
+            return False
 
         parsed_results = []
         for _, value in results.items():
@@ -81,7 +87,8 @@ class YouTubeTranscriptSearch:
 
         return parsed_results
 
-    def create_embeds(self, results: list) -> list[discord.ext.pages.Page]:
+    @staticmethod
+    def create_embeds(*, results: list) -> list[discord.ext.pages.Page]:
         """
         Create a list of Discord embeds from the parsed results, grouping them by video ID.
 

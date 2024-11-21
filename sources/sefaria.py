@@ -5,6 +5,7 @@ import urllib.parse
 import discord.ext
 import markdownify
 import requests
+from typing import Optional, Any, Union
 
 import helpers.helpers
 from helpers.pycord_helpers import DiscordEmbedCreator, DiscordEmbedPaginator
@@ -57,14 +58,30 @@ class SefariaAPI:
 
         return flattened
 
-    def fetch_sefaria_versions(self, *, titles: [str, list], max_threads: int = 50):
+    def fetch_sefaria_versions(self, *, titles: [str, list[str]], max_threads: int = 50) -> list[dict[str, str]]:
+        """
+        Fetch version information for the specified titles from the Sefaria API.
+
+        This function concurrently fetches versions for each title using a ThreadPoolExecutor.
+
+        :param titles: A list of titles to fetch versions for. If a single title is passed as a string, it will be converted to a list.
+        :param max_threads: The maximum number of threads to use for concurrent requests.
+        :return: A list of dictionaries containing the version information for each title.
+        """
         if isinstance(titles, str):
             titles = [titles]
 
         versions = []
         count = 0
 
-        def fetch_version(title):
+        def fetch_version(*, title: str) -> list[dict[str, str]]:
+            """
+            Fetch version information for a single title from the Sefaria API.
+
+            :param title: The title to fetch versions for.
+            :return: A list of dictionaries containing the version information for the title.
+            :raises Exception: If the request to the Sefaria API fails.
+            """
             nonlocal count
             count += 1
             # print(f"Fetching versions for {title} [{count}/{len(titles)}]")
@@ -77,7 +94,7 @@ class SefariaAPI:
                 raise Exception(f"Failed to fetch version data for {title} from Sefaria API. Status code: {response.status_code}")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
-            future_to_title = {executor.submit(fetch_version, title): title for title in titles}
+            future_to_title = {executor.submit(fetch_version, title=title): title for title in titles}
             for future in concurrent.futures.as_completed(future_to_title):
                 try:
                     versions.append(future.result())
@@ -90,7 +107,19 @@ class SefariaAPI:
 
         return versions
 
-    def get_sefaria_related(self, *, reference: str):
+    def get_sefaria_related(self, *, reference: str) -> Optional[dict[str, Any]]:
+        """
+        Fetches related content from the Sefaria API based on a biblical reference.
+
+        This method uses the `reference` parameter to determine the appropriate biblical reference,
+        parses it using `BibleBooks.extract_book_reference`, and constructs a URL to query Sefaria's
+        related content API. If the `reference` is valid, it sends an HTTP GET request and returns
+        the JSON response. Otherwise, it returns `None`.
+
+        :param reference: A string representing a biblical reference (e.g., "Genesis 1:1").
+        :return: A dictionary containing the API's response if the reference is valid,
+                 or `None` if the reference could not be parsed.
+        """
         parsed_reference = BibleBooks.extract_book_reference(user_input=reference)
 
         if parsed_reference:
@@ -104,13 +133,22 @@ class SefariaAPI:
         else:
             return None
 
-    def get_sefaria_codex(self, *, reference: str):
+    def get_sefaria_codex(self, *, reference: str) -> list[Any]:
+        """
+        Fetches and formats codex information from the Sefaria API for display in embeds.
+
+        This method retrieves related content from the Sefaria API using the provided `reference`
+        and extracts manuscript (codex) data. Each codex is converted into an embed using the
+        `PycordEmbedCreator`, and the embeds are paginated using `PycordPaginator`.
+
+        :param reference: A string representing a biblical reference (e.g., "Exodus 20:1").
+        :return: A list of paginated embed objects ready for display.
+        """
         codexes = self.get_sefaria_related(reference=reference).get("manuscripts", [])
 
         embeds = []
 
         for codex in codexes:
-
             line_embed_data = PycordEmbedCreator.EmbedData(
                 title=f"""{codex.get("manuscript", {}).get("title", "")}""",
                 image=PycordEmbedCreator.EmbedImage(
@@ -125,7 +163,17 @@ class SefariaAPI:
 
         return paged_embeds
 
-    def get_sefaria_links(self, *, reference: str):
+    def get_sefaria_links(self, *, reference: str) -> list[Any]:
+        """
+        Retrieves and formats links from the Sefaria API for display in embeds.
+
+        This method fetches related links for the given biblical `reference` using the Sefaria API,
+        then formats them as embeds suitable for display. A header embed is included as the first
+        page of the paginated embeds, providing a link to the full reference on Sefaria.
+
+        :param reference: A string representing a biblical reference (e.g., "Isaiah 7:14").
+        :return: A list of paginated embed objects ready for display.
+        """
         links = self.get_sefaria_related(reference=reference).get("links", [])
         parsed_reference = urllib.parse.quote(BibleBooks.extract_book_reference(user_input=reference))
 
@@ -135,18 +183,21 @@ class SefariaAPI:
             title=reference,
             url=f"https://www.sefaria.org/{parsed_reference}?lang=bi&with=all&lang2=en",
             footer=PycordEmbedCreator.EmbedFooter(
-                text=f"""Results from Sefaria"""),
+                text="Results from Sefaria"),
         )
         header_embed = PycordEmbedCreator.create_embed(embed_data=header_embed_data)
 
         for link in links:
             # https://www.sefaria.org/Isaiah.7.14?lang=bi&with=all&lang2=en
-
             source_ref = urllib.parse.quote(link.get("sourceRef"))
+            if source_ref:
+                url = f"https://www.sefaria.org/{source_ref}?lang=bi&with=all&lang2=en"
+            else:
+                url = None
 
             line_embed_data = PycordEmbedCreator.EmbedData(
                 description=f"""{link.get("category")}: {link.get("sourceRef")}""",
-                url=f"https://www.sefaria.org/{source_ref}?lang=bi&with=all&lang2=en",
+                url=url,
             )
 
             embeds.append(PycordEmbedCreator.create_embed(embed_data=line_embed_data))
@@ -155,7 +206,20 @@ class SefariaAPI:
 
         return paged_embeds
 
-    def get_sefaria_text(self, *, reference: str, version: str = None, language: str = None, fill_in_missing_segments: bool = True) -> list[discord.ext.pages.Page]:
+    def get_sefaria_text(self, *, reference: str, version: Optional[str] = None, language: Optional[str] = None, fill_in_missing_segments: bool = True) -> list[discord.ext.pages.Page]:
+        """
+        Fetches and formats the text of a biblical reference from the Sefaria API.
+
+        This method retrieves the specified text for a given `reference` from Sefaria, optionally filtered
+        by `version` and `language`. It supports filling in missing segments if the `fill_in_missing_segments`
+        parameter is enabled. The response is converted into a list of paginated embed pages for display.
+
+        :param reference: A string representing a biblical reference (e.g., "Genesis 1:1").
+        :param version: Optional; a specific text version to retrieve (e.g., "KJV").
+        :param language: Optional; the language of the text to retrieve (e.g., "en").
+        :param fill_in_missing_segments: A boolean indicating whether missing text segments should be filled. Defaults to True.
+        :return: A list of `discord.ext.pages.Page` objects containing the formatted text.
+        """
         parsed_reference = BibleBooks.extract_book_reference(user_input=reference)
 
         best_versions = MatchingHelpers.fuzzy_match_best_dicts(data_list=self.sefaria_versions, target_fields=["title", "versionTitle", "language"], target_values=[parsed_reference["book"], version, language])
@@ -216,7 +280,18 @@ class SefariaAPI:
         return paged_embeds
 
     # Define a function to get Sefaria manuscripts data
-    def get_sefaria_manuscripts(self, reference):
+    def get_sefaria_manuscripts(self, reference: str) -> Union[dict[str, Any], str]:
+        """
+        Fetches manuscript data for a given reference from the Sefaria API.
+
+        This method constructs a URL using the provided `reference` and queries the Sefaria API
+        for manuscript data. If the API call is successful, it returns the parsed JSON response.
+        Otherwise, it returns an error message with the HTTP status code.
+
+        :param reference: A string representing the reference for which to fetch manuscript data (e.g., "Genesis 1:1").
+        :return: A dictionary containing the manuscript data if the API call succeeds,
+                 or an error message as a string if the call fails.
+        """
         url = f"{self.sefaria_manuscripts}{reference}"
         response = requests.get(url)
 
@@ -289,10 +364,30 @@ class SefariaAPI:
             return f"Error: Unable to fetch lexicon data from Sefaria (status code {response.status_code})"
 
     @staticmethod
-    def flatten_definitions(*, definitions_dict: list):
+    def flatten_definitions(*, definitions_dict: list[dict[str, Any]]) -> list[str]:
+        """
+        Flattens nested definitions from a dictionary of senses into a single list of definitions.
+
+        This method recursively traverses a dictionary structure representing word senses to extract all
+        definitions into a flat list. It handles nested senses by iterating through them recursively.
+
+        :param definitions_dict: A list of dictionaries representing word senses, where each dictionary
+                                 may contain a "definition" key and a nested "senses" key.
+        :return: A list of strings containing all definitions found in the nested structure.
+        """
         definitions = []
 
-        def extract_definitions(senses):
+        def extract_definitions(senses: list[dict[str, Any]]) -> None:
+            """
+            Recursively extracts definitions from a list of word senses.
+
+            This function iterates through each sense in the provided list, adding any found definitions
+            to the outer `definitions` list. If a sense contains nested "senses", it calls itself
+            recursively to continue extracting definitions.
+
+            :param senses: A list of dictionaries representing word senses. Each dictionary may
+                           include a "definition" key and a "senses" key for nested senses.
+            """
             for item in senses:
                 if "definition" in item:
                     definitions.append(item["definition"])
