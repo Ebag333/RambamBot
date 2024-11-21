@@ -121,17 +121,20 @@ class SefariaAPI:
                  or `None` if the reference could not be parsed.
         """
         parsed_reference = BibleBooks.extract_book_reference(user_input=reference)
+        response = None
 
         if parsed_reference:
             url = f"""{self.sefaria_api_base_url}/related/{urllib.parse.quote(parsed_reference.get("reference"))}"""
             headers = {"accept": "application/json"}
 
             response = requests.get(url, headers=headers)
-            response = response.json()
 
-            return response
-        else:
-            return None
+            try:
+                response = response.json()
+            except requests.exceptions.JSONDecodeError:
+                response = None
+
+        return response
 
     def get_sefaria_codex(self, *, reference: str) -> list[Any]:
         """
@@ -175,7 +178,8 @@ class SefariaAPI:
         :return: A list of paginated embed objects ready for display.
         """
         links = self.get_sefaria_related(reference=reference).get("links", [])
-        parsed_reference = urllib.parse.quote(BibleBooks.extract_book_reference(user_input=reference))
+        parsed_reference = BibleBooks.extract_book_reference(user_input=reference)
+        parsed_reference = urllib.parse.quote(parsed_reference.get("reference"))
 
         embeds = []
 
